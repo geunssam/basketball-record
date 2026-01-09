@@ -115,7 +115,7 @@ function render() {
       </div>
 
       <!-- 경기 영역 (좌우 분리) -->
-      <div class="flex-1 flex overflow-hidden">
+      <div class="flex">
         <!-- 홈팀 (좌측) -->
         <div class="flex-1 flex flex-col border-r ${colors.border} overflow-hidden">
           <div class="flex items-center justify-center gap-4 py-3 ${colors.cardBgAlt}">
@@ -143,7 +143,7 @@ function render() {
           </div>
 
           <!-- 온코트 선수 리스트 -->
-          <div class="flex-1 overflow-y-auto p-2">
+          <div class="overflow-y-auto p-2">
             <div class="space-y-2">
               ${homeOnCourt.map(player => renderPlayerRow(player, 'home', game.settings.personalFoulLimit, isDark)).join('')}
             </div>
@@ -151,7 +151,7 @@ function render() {
 
           <!-- 벤치 -->
           ${homeBench.length > 0 ? `
-            <div class="${colors.cardBgAlt} p-2 border-t ${colors.border}">
+            <div class="${colors.cardBgAlt} p-2">
               <div class="text-sm ${colors.textMuted} mb-2">📋 벤치</div>
               <div class="flex flex-wrap gap-2">
                 ${homeBench.map(p => `
@@ -191,7 +191,7 @@ function render() {
           </div>
 
           <!-- 온코트 선수 리스트 -->
-          <div class="flex-1 overflow-y-auto p-2">
+          <div class="overflow-y-auto p-2">
             <div class="space-y-2">
               ${awayOnCourt.map(player => renderPlayerRow(player, 'away', game.settings.personalFoulLimit, isDark)).join('')}
             </div>
@@ -199,7 +199,7 @@ function render() {
 
           <!-- 벤치 -->
           ${awayBench.length > 0 ? `
-            <div class="${colors.cardBgAlt} p-2 border-t ${colors.border}">
+            <div class="${colors.cardBgAlt} p-2">
               <div class="text-sm ${colors.textMuted} mb-2">📋 벤치</div>
               <div class="flex flex-wrap gap-2">
                 ${awayBench.map(p => `
