@@ -61,7 +61,7 @@ function render() {
   app.innerHTML = `
     <div class="min-h-screen flex flex-col ${colors.bg} ${colors.text}">
       <!-- 스코어보드 영역 (가로 배열) -->
-      <div class="${colors.headerBg} p-4 shadow">
+      <div class="${colors.headerBg} p-4 shadow relative">
         <!-- 메뉴 버튼 (좌측 상단) -->
         <button id="btn-menu" class="absolute top-3 left-3 w-12 h-12 rounded-full ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} flex items-center justify-center text-xl z-10">
           ☰
