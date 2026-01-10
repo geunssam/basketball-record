@@ -12,7 +12,8 @@ import {
 } from '../store.js';
 
 let selectedPlayer = null; // { team: 'home'|'away', player: {...} }
-let modalType = null; // 'score' | 'foul' | 'rebound' | 'substitution' | 'quarter-end' | 'game-end'
+let modalType = null; // 'score' | 'foul' | 'rebound' | 'substitution' | 'quarter-end' | 'game-end' | 'menu' | 'navigate-confirm'
+let navigateTarget = null; // 이동할 경로 저장
 
 export function renderGameScreen() {
   const game = getCurrentGame();
@@ -61,7 +62,12 @@ function render() {
     <div class="min-h-screen flex flex-col ${colors.bg} ${colors.text}">
       <!-- 스코어보드 영역 (가로 배열) -->
       <div class="${colors.headerBg} p-4 shadow">
-        <!-- 테마 토글 버튼 -->
+        <!-- 메뉴 버튼 (좌측 상단) -->
+        <button id="btn-menu" class="absolute top-3 left-3 w-12 h-12 rounded-full ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} flex items-center justify-center text-xl z-10">
+          ☰
+        </button>
+
+        <!-- 테마 토글 버튼 (우측 상단) -->
         <button id="btn-theme" class="absolute top-3 right-3 w-12 h-12 rounded-full ${isDark ? 'bg-yellow-500 text-gray-900' : 'bg-gray-800 text-white'} flex items-center justify-center text-xl z-10">
           ${isDark ? '☀️' : '🌙'}
         </button>
@@ -329,6 +335,11 @@ function renderPlayerRow(player, team, foulLimit, isDark) {
 function bindEvents() {
   const game = getCurrentGame();
 
+  // 메뉴 버튼
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    showModal('menu');
+  });
+
   // 테마 토글 버튼
   document.getElementById('btn-theme').addEventListener('click', () => {
     toggleTheme();
@@ -405,6 +416,11 @@ function showModal(type) {
   modalType = type;
   const container = document.getElementById('modal-container');
   const game = getCurrentGame();
+  const theme = getTheme();
+  const isDark = theme === 'dark';
+  const colors = {
+    textMuted: isDark ? 'text-gray-400' : 'text-gray-500',
+  };
 
   let content = '';
 
@@ -616,6 +632,71 @@ function showModal(type) {
         </div>
       `;
       break;
+
+    case 'menu':
+      content = `
+        <div class="modal-overlay" id="modal-overlay">
+          <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-bold">☰ 경기 메뉴</h3>
+              <button class="modal-close text-2xl text-gray-400">&times;</button>
+            </div>
+
+            <div class="space-y-3">
+              <button id="menu-home" class="w-full text-left ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-xl p-4 flex items-center gap-3">
+                <span class="text-2xl">🏠</span>
+                <div>
+                  <div class="font-bold">홈으로 돌아가기</div>
+                  <div class="text-sm ${colors.textMuted}">경기는 자동 저장됩니다</div>
+                </div>
+              </button>
+
+              <button id="menu-setup" class="w-full text-left ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-xl p-4 flex items-center gap-3">
+                <span class="text-2xl">⚙️</span>
+                <div>
+                  <div class="font-bold">경기 설정 수정</div>
+                  <div class="text-sm ${colors.textMuted}">쿼터 수, 파울 제한 등</div>
+                </div>
+              </button>
+
+              <button id="menu-lineup" class="w-full text-left ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-xl p-4 flex items-center gap-3">
+                <span class="text-2xl">📋</span>
+                <div>
+                  <div class="font-bold">라인업 수정</div>
+                  <div class="text-sm ${colors.textMuted}">선수 추가/제거</div>
+                </div>
+              </button>
+            </div>
+
+            <button class="modal-close w-full mt-4 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded-xl p-3 font-medium">
+              닫기
+            </button>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'navigate-confirm':
+      content = `
+        <div class="modal-overlay" id="modal-overlay">
+          <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4 text-center">⚠️ 경기를 중단할까요?</h3>
+
+            <p class="text-center mb-2">
+              현재 경기 데이터는 자동 저장됩니다.
+            </p>
+            <p class="text-center ${colors.textMuted} text-sm mb-6">
+              홈 화면에서 '이어하기'로 다시 시작할 수 있습니다.
+            </p>
+
+            <div class="flex gap-3">
+              <button class="modal-close btn btn-secondary flex-1">취소</button>
+              <button id="confirm-navigate" class="btn btn-primary flex-1">확인</button>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
   }
 
   container.innerHTML = content;
@@ -746,6 +827,44 @@ function bindModalEvents() {
         return g;
       });
       navigate('/summary');
+    });
+  }
+
+  // 메뉴 버튼들
+  const menuHomeBtn = document.getElementById('menu-home');
+  if (menuHomeBtn) {
+    menuHomeBtn.addEventListener('click', () => {
+      navigateTarget = '/';
+      closeModal();
+      showModal('navigate-confirm');
+    });
+  }
+
+  const menuSetupBtn = document.getElementById('menu-setup');
+  if (menuSetupBtn) {
+    menuSetupBtn.addEventListener('click', () => {
+      navigateTarget = '/setup';
+      closeModal();
+      showModal('navigate-confirm');
+    });
+  }
+
+  const menuLineupBtn = document.getElementById('menu-lineup');
+  if (menuLineupBtn) {
+    menuLineupBtn.addEventListener('click', () => {
+      // 라인업은 확인 없이 바로 이동 (경기 데이터 유지)
+      navigate('/lineup');
+    });
+  }
+
+  // 네비게이션 확인
+  const confirmNavigateBtn = document.getElementById('confirm-navigate');
+  if (confirmNavigateBtn) {
+    confirmNavigateBtn.addEventListener('click', () => {
+      if (navigateTarget) {
+        navigate(navigateTarget);
+        navigateTarget = null;
+      }
     });
   }
 }
